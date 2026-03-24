@@ -8,37 +8,43 @@
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #eee; font-family: 'Anton', sans-serif; touch-action: none; }
         
-        /* Menu Inicial */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; display: flex; flex-direction: column; 
             align-items: center; justify-content: center; z-index: 999;
         }
 
+        /* Estilo do Logo no Menu */
+        #menu-logo {
+            width: 180px; /* Tamanho ideal para mobile */
+            height: auto;
+            margin-bottom: 10px;
+        }
+
         #rules-box {
-            background: #fdfdfd; border: 2px dashed #000; padding: 15px;
-            margin: 15px 0; width: 280px; font-family: sans-serif; font-size: 14px;
+            background: #fdfdfd; border: 2px dashed #000; padding: 12px;
+            margin: 10px 0; width: 260px; font-family: sans-serif; font-size: 13px;
         }
         #rules-box h4 { margin: 0 0 5px 0; font-family: 'Anton'; color: #d00; text-transform: uppercase; }
 
         .btn-kandal {
             background: #000; color: #fff; border: none; padding: 15px 40px;
-            font-size: 22px; cursor: pointer; text-transform: uppercase;
-            box-shadow: 4px 4px 0px #d00; margin-bottom: 10px; width: 250px;
+            font-size: 20px; cursor: pointer; text-transform: uppercase;
+            box-shadow: 4px 4px 0px #d00; margin-bottom: 8px; width: 240px;
         }
         .btn-outline { background: #fff; color: #000; border: 3px solid #000; box-shadow: 4px 4px 0px #ccc; }
 
-        #high-scores { width: 220px; background: #fff; border: 2px solid #000; padding: 10px; text-align: center; }
-        .score-row { display: flex; justify-content: space-between; font-size: 16px; padding: 3px 0; border-bottom: 1px solid #eee; }
+        #high-scores { width: 200px; background: #fff; border: 2px solid #000; padding: 8px; text-align: center; }
+        .score-row { display: flex; justify-content: space-between; font-size: 14px; padding: 2px 0; border-bottom: 1px solid #eee; }
         
         #ui { position: absolute; top: 20px; left: 20px; z-index: 50; display: none; pointer-events: none; }
-        .bar-outer { width: 150px; height: 15px; background: #222; border: 3px solid #000; }
+        .bar-outer { width: 140px; height: 12px; background: #222; border: 3px solid #000; }
         #hp-bar { width: 100%; height: 100%; background: #d00; transition: width 0.2s; }
-        #score { font-size: 40px; color: #000; margin-top: 5px; }
+        #score { font-size: 35px; color: #000; margin-top: 5px; }
 
         #trans-msg {
             position: absolute; width: 100%; top: 35%; text-align: center;
-            font-size: 45px; color: #ffae00; text-shadow: 2px 2px 0px #000; display: none; z-index: 60;
+            font-size: 40px; color: #ffae00; text-shadow: 2px 2px 0px #000; display: none; z-index: 60;
         }
 
         #game-over {
@@ -52,11 +58,11 @@
 <body>
 
 <div id="start-screen">
-    <h1 style="font-size: 35px; margin: 10px 0; color: #000;">KANDAL GYM</h1>
+    <img src="logo_kandal.png" id="menu-logo" alt="Kandal Gym Logo">
     
     <div id="rules-box">
         <h4>REGRAS DO TREINO:</h4>
-        <ul style="padding-left: 20px; margin: 0;">
+        <ul style="padding-left: 18px; margin: 0;">
             <li>🥗 <b>BOM:</b> Proteína/Legumes dão +100 pts e Vida.</li>
             <li>🍔 <b>MAU:</b> Fast food retira muita Vida!</li>
             <li>⚡ <b>EVOLUÇÃO:</b> Aos 1000 pts viras um Monstro.</li>
@@ -67,7 +73,7 @@
     <button class="btn-kandal" onclick="iniciarJogo()">INICIAR TREINO</button>
     
     <div id="high-scores">
-        <h3 style="margin:0; color:#d00; font-size: 18px;">RECORDES</h3>
+        <h3 style="margin:0; color:#d00; font-size: 16px;">RECORDES</h3>
         <div id="scores-list"></div>
     </div>
 </div>
@@ -80,8 +86,8 @@
 <div id="trans-msg">ESTÁS UM MONSTRO!</div>
 
 <div id="game-over">
-    <h2 style="font-size:40px; color:#d00; margin:0;">FALHA MUSCULAR</h2>
-    <p id="final-score-txt" style="font-size:25px; margin: 10px 0;">PONTOS: 0</p>
+    <h2 style="font-size:35px; color:#d00; margin:0;">FALHA MUSCULAR</h2>
+    <p id="final-score-txt" style="font-size:22px; margin: 8px 0;">PONTOS: 0</p>
     
     <button class="btn-kandal" onclick="iniciarJogo()">RECOMEÇAR</button>
     <button class="btn-kandal btn-outline" onclick="voltarAoMenu()">SAIR PARA O MENU</button>
@@ -107,7 +113,7 @@ resize();
 
 const imagens = {};
 const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=11'; });
+nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=12'; });
 
 function atualizarTabela() {
     let records = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
@@ -150,7 +156,7 @@ class Obj {
         const tipos = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
         this.n = tipos[Math.floor(Math.random() * tipos.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
-        this.s = 50;
+        this.s = 45;
         this.x = Math.random() * (canvas.width - this.s);
         this.y = -this.s;
         this.v = 5 + Math.random() * 4 + (score / 2000);
