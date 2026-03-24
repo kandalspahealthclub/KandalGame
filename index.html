@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Balanced Evolution</title>
+    <title>Kandal Gym: Rules & Style</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; font-family: 'Anton', sans-serif; touch-action: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #eee; font-family: 'Anton', sans-serif; touch-action: none; }
+        
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 999;
+            align-items: center; justify-content: center; z-index: 999; overflow-y: auto;
         }
+
+        /* Secção de Regras */
+        #rules-box {
+            background: #fdfdfd; border: 2px dashed #000; padding: 15px;
+            margin: 15px 0; width: 280px; font-family: sans-serif; font-size: 14px;
+        }
+        #rules-box h4 { margin: 0 0 5px 0; font-family: 'Anton'; color: #d00; text-transform: uppercase; }
+        #rules-box ul { padding-left: 20px; margin: 0; }
+
         .btn-kandal {
-            background: #000; color: #fff; border: none; padding: 20px 50px;
-            font-size: 25px; cursor: pointer; text-transform: uppercase;
-            box-shadow: 6px 6px 0px #d00; margin-bottom: 25px;
+            background: #000; color: #fff; border: none; padding: 15px 40px;
+            font-size: 22px; cursor: pointer; text-transform: uppercase;
+            box-shadow: 4px 4px 0px #d00; margin-bottom: 20px;
         }
-        #high-scores {
-            width: 220px; background: #f9f9f9; border: 2px solid #000;
-            padding: 10px; text-align: center;
-        }
-        .score-row { display: flex; justify-content: space-between; font-size: 18px; padding: 4px 0; border-bottom: 1px solid #eee; }
+
+        #high-scores { width: 220px; background: #fff; border: 2px solid #000; padding: 10px; text-align: center; }
+        .score-row { display: flex; justify-content: space-between; font-size: 16px; padding: 3px 0; border-bottom: 1px solid #eee; }
         
         #ui { position: absolute; top: 20px; left: 20px; z-index: 50; display: none; pointer-events: none; }
         .bar-outer { width: 150px; height: 15px; background: #222; border: 3px solid #000; }
@@ -44,10 +52,22 @@
 <body>
 
 <div id="start-screen">
-    <h1 style="font-size: 40px; margin-bottom: 15px;">KANDAL GYM</h1>
+    <h1 style="font-size: 35px; margin: 10px 0; color: #000;">KANDAL GYM</h1>
+    
+    <div id="rules-box">
+        <h4>REGRAS DO TREINO:</h4>
+        <ul>
+            <li>🥗 <b>BOM:</b> Proteína e Legumes dão +100 pts e Vida.</li>
+            <li>🍔 <b>MAU:</b> Fast food retira muita Vida!</li>
+            <li>⚡ <b>EVOLUÇÃO:</b> Aos 1000 pts viras um Monstro.</li>
+            <li>💀 <b>MORTE:</b> Se a barra de vida chegar a zero, o treino acaba.</li>
+        </ul>
+    </div>
+
     <button class="btn-kandal" onclick="iniciarJogo()">INICIAR TREINO</button>
+    
     <div id="high-scores">
-        <h3 style="margin:0; color:#d00;">RECORDES</h3>
+        <h3 style="margin:0; color:#d00; font-size: 18px;">RECORDES</h3>
         <div id="scores-list"></div>
     </div>
 </div>
@@ -60,7 +80,7 @@
 <div id="trans-msg">ESTÁS UM MONSTRO!</div>
 
 <div id="game-over">
-    <h2 style="font-size:45px; color:#d00;">FALHA MUSCULAR</h2>
+    <h2 style="font-size:40px; color:#d00;">FALHA MUSCULAR</h2>
     <p id="final-score-txt" style="font-size:25px;">PONTOS: 0</p>
     <button class="btn-kandal" onclick="iniciarJogo()">RECOMEÇAR</button>
 </div>
@@ -73,7 +93,10 @@ const ctx = canvas.getContext("2d");
 const startScreen = document.getElementById("start-screen");
 const ui = document.getElementById("ui");
 const gameOverScreen = document.getElementById("game-over");
-const transMsg = document.getElementById("trans-msg");
+
+// --- CONFIGURAÇÃO DO FUNDO ---
+// Podes mudar para qualquer cor (ex: "#f0f0f0", "#ffffff", "#000000")
+const COR_FUNDO = "#f8f8f8"; 
 
 let jogoIniciado = false;
 let jogador, score, obstaculos, touchX, transformando, shake = 0;
@@ -84,7 +107,7 @@ resize();
 
 const imagens = {};
 const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=9'; });
+nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=10'; });
 
 function atualizarTabela() {
     let records = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
@@ -100,19 +123,14 @@ function salvarRecorde(s) {
 }
 
 function iniciarJogo() {
-    // TAMANHOS AJUSTADOS PARA MOBILE
-    jogador = { 
-        w: 65, h: 100, // Magro
-        x: canvas.width/2 - 32, y: canvas.height-160, 
-        speed: 14, hp: 100, musculado: false 
-    };
+    jogador = { w: 65, h: 100, x: canvas.width/2 - 32, y: canvas.height-160, speed: 14, hp: 100, musculado: false };
     score = 0; obstaculos = []; touchX = null; transformando = false; jogoIniciado = true;
     document.getElementById("hp-bar").style.width = "100%";
     document.getElementById("score").innerText = "0";
     startScreen.style.display = "none";
     gameOverScreen.style.display = "none";
     ui.style.display = "block";
-    transMsg.style.display = "none";
+    document.getElementById("trans-msg").style.display = "none";
 }
 
 window.ontouchstart = (e) => touchX = e.touches[0].clientX;
@@ -124,7 +142,7 @@ class Obj {
         const tipos = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
         this.n = tipos[Math.floor(Math.random() * tipos.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
-        this.s = 50; // Objetos ligeiramente menores
+        this.s = 50;
         this.x = Math.random() * (canvas.width - this.s);
         this.y = -this.s;
         this.v = 5 + Math.random() * 4 + (score / 2000);
@@ -138,7 +156,15 @@ class Obj {
 }
 
 function loop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // DESENHAR FUNDO
+    ctx.fillStyle = COR_FUNDO;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Opcional: Desenhar grelha subtil de ginásio
+    ctx.strokeStyle = "rgba(0,0,0,0.03)";
+    for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+    for(let j=0; j<canvas.height; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
+
     if (jogoIniciado) {
         if (shake > 0) { ctx.save(); ctx.translate(Math.random()*6-3, Math.random()*6-3); shake--; }
 
@@ -150,17 +176,12 @@ function loop() {
         if (jogador.x < 0) jogador.x = 0;
         if (jogador.x > canvas.width - jogador.w) jogador.x = canvas.width - jogador.w;
 
-        // EVOLUÇÃO EQUILIBRADA
         if (score >= 1000 && !jogador.musculado) {
-            transformando = true; transMsg.style.display = "block"; shake = 40;
+            transformando = true; document.getElementById("trans-msg").style.display = "block"; shake = 40;
             setTimeout(() => {
-                jogador.musculado = true;
-                // Musculado: Fica mais alto mas não excessivamente largo
-                jogador.w = 90;  // Antes era 110, agora 90 para ter espaço
-                jogador.h = 145; 
-                jogador.y = canvas.height - 200;
-                jogador.speed = 18; // Mais ágil
-                transformando = false; transMsg.style.display = "none";
+                jogador.musculado = true; jogador.w = 90; jogador.h = 145; 
+                jogador.y = canvas.height - 200; jogador.speed = 18;
+                transformando = false; document.getElementById("trans-msg").style.display = "none";
             }, 1200);
         }
 
@@ -172,7 +193,6 @@ function loop() {
         
         for (let i = obstaculos.length - 1; i >= 0; i--) {
             const o = obstaculos[i]; o.draw();
-            // HITBOX MAIS JUSTA (Reduzi 10px em cada lado para facilitar o desvio)
             if (jogador.x + 10 < o.x + o.s - 10 && jogador.x + jogador.w - 10 > o.x + 10 && 
                 jogador.y + 10 < o.y + o.s - 10 && jogador.y + jogador.h - 10 > o.y + 10) {
                 if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
