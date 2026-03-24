@@ -3,53 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Hardcore Edition</title>
+    <title>Kandal Gym: Dragon Ball Evolution</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #ffffff; font-family: 'Anton', sans-serif; touch-action: none; }
         canvas { display: block; }
         
-        /* UI de Jogo */
         #ui { position: absolute; top: 30px; left: 20px; pointer-events: none; z-index: 50; }
         .bar-outer { width: 200px; height: 25px; background: #222; border: 4px solid #000; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); }
         #hp-bar { width: 100%; height: 100%; background: #d00; transition: width 0.2s; }
         #score-display { font-size: 50px; color: #000; margin-top: 5px; letter-spacing: -2px; }
 
-        /* Ecrã de Game Over (Respawn) */
+        /* Ecrã de Game Over */
         #game-over {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; text-align: center;
+            background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 100; text-align: center;
         }
-        #game-over h2 { font-size: 60px; color: #d00; margin: 0; line-height: 0.9; }
-        #game-over p { font-size: 30px; color: #111; margin: 10px 0; }
-        #best-score { color: #daa520; font-size: 40px; }
         #restart-btn {
             background: #000; color: #fff; border: none; padding: 20px 40px;
-            font-family: 'Anton', sans-serif; font-size: 25px; cursor: pointer;
-            margin-top: 20px; box-shadow: 6px 6px 0px #d00;
+            font-family: 'Anton', sans-serif; font-size: 25px; margin-top: 20px; box-shadow: 6px 6px 0px #d00;
         }
 
+        /* Efeito de Sangue */
         #blood-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 40; opacity: 0;
             box-shadow: inset 0 0 150px rgba(200, 0, 0, 0.9); transition: opacity 0.3s;
+        }
+
+        /* Texto de Transformação */
+        #trans-msg {
+            position: absolute; width: 100%; text-align: center; top: 40%;
+            font-size: 80px; color: #ffae00; text-shadow: 4px 4px 0px #000;
+            display: none; z-index: 60; pointer-events: none;
         }
     </style>
 </head>
 <body>
 
 <div id="blood-overlay"></div>
+<div id="trans-msg">EVOLUÇÃO KANDAL!</div>
 <div id="ui">
     <div class="bar-outer"><div id="hp-bar"></div></div>
     <div id="score-display">0</div>
 </div>
 
 <div id="game-over">
-    <h2>FALHA<br>MUSCULAR</h2>
-    <p>SCORE: <span id="final-score">0</span></p>
-    <p>RECORD: <span id="best-score">0</span></p>
+    <h2 style="font-size:60px; color:#d00; margin:0;">FALHA MUSCULAR</h2>
+    <p style="font-size:30px;">SCORE: <span id="final-score">0</span></p>
+    <p style="font-size:30px; color:#daa520;">RECORD: <span id="best-score">0</span></p>
     <button id="restart-btn">RECOMEÇAR TREINO</button>
 </div>
 
@@ -62,40 +65,27 @@ const hpBar = document.getElementById("hp-bar");
 const scoreDisplay = document.getElementById("score-display");
 const bloodOverlay = document.getElementById("blood-overlay");
 const gameOverScreen = document.getElementById("game-over");
-const finalScoreTxt = document.getElementById("final-score");
-const bestScoreTxt = document.getElementById("best-score");
+const transMsg = document.getElementById("trans-msg");
 const restartBtn = document.getElementById("restart-btn");
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
 resize();
 
 // --- IMAGENS ---
 const imagens = {};
-const nomes = ['boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico', 'logo_kandal'];
+const nomes = ['boneco', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico', 'logo_kandal'];
 nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; });
 
-// Estado do Jogo
-let jogador, score, spawnTimer, shakeTimer, obstaculos, touchX, gameActive;
+let jogador, score, spawnTimer, shakeTimer, obstaculos, touchX, gameActive, transformando;
 
 function init() {
-    jogador = { w: 110, h: 170, x: window.innerWidth / 2 - 55, y: window.innerHeight - 230, speed: 14, hp: 100 };
-    score = 0;
-    spawnTimer = 0;
-    shakeTimer = 0;
-    obstaculos = [];
-    touchX = null;
-    gameActive = true;
-    
+    jogador = { w: 90, h: 140, x: window.innerWidth / 2 - 45, y: window.innerHeight - 200, speed: 13, hp: 100, musculado: false };
+    score = 0; spawnTimer = 0; shakeTimer = 0; obstaculos = []; touchX = null; gameActive = true; transformando = false;
     gameOverScreen.style.display = "none";
-    hpBar.style.width = "100%";
-    scoreDisplay.innerText = "0";
+    transMsg.style.display = "none";
 }
 
-// Controlos
 window.ontouchstart = (e) => touchX = e.touches[0].clientX;
 window.ontouchmove = (e) => touchX = e.touches[0].clientX;
 window.ontouchend = () => touchX = null;
@@ -111,38 +101,36 @@ class Objeto {
         this.vel = 5 + Math.random() * 5 + (score / 1500);
         this.rot = Math.random() * Math.PI * 2;
     }
-    update() { this.y += this.vel; this.rot += 0.04; }
+    update() { if(!transformando) this.y += this.vel; this.rot += 0.04; }
     draw() {
         const img = imagens[this.nome];
         ctx.save();
         ctx.translate(this.x + this.size/2, this.y + this.size/2);
         ctx.rotate(this.rot);
-        ctx.shadowColor = "rgba(0,0,0,0.1)"; ctx.shadowBlur = 10;
-        if (img && img.complete && img.naturalWidth > 0) {
-            ctx.drawImage(img, -this.size/2, -this.size/2, this.size, this.size);
-        } else {
-            ctx.fillStyle = this.tipo === 'bom' ? '#22c55e' : '#ef4444';
-            ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
-        }
+        if (img && img.complete && img.naturalWidth > 0) ctx.drawImage(img, -this.size/2, -this.size/2, this.size, this.size);
+        else { ctx.fillStyle = this.tipo === 'bom' ? '#22c55e' : '#ef4444'; ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size); }
         ctx.restore();
     }
 }
 
-function endGame() {
-    gameActive = false;
-    const record = localStorage.getItem('kandal_record') || 0;
-    if (score > record) {
-        localStorage.setItem('kandal_record', score);
-    }
-    finalScoreTxt.innerText = score;
-    bestScoreTxt.innerText = localStorage.getItem('kandal_record');
-    gameOverScreen.style.display = "flex";
+function dispararTransformacao() {
+    transformando = true;
+    shakeTimer = 60; // Treme muito
+    transMsg.style.display = "block";
+    
+    setTimeout(() => {
+        jogador.musculado = true;
+        jogador.w = 130;
+        jogador.h = 190;
+        jogador.y = window.innerHeight - 250;
+        jogador.speed = 16; // Fica mais rápido!
+        transformando = false;
+        transMsg.style.display = "none";
+    }, 1500); // 1.5 segundos de "grito"
 }
 
-restartBtn.onclick = () => { init(); };
-
 function update() {
-    if (!gameActive) return;
+    if (!gameActive || transformando) return;
 
     if (touchX !== null) {
         let centro = jogador.x + jogador.w / 2;
@@ -152,8 +140,10 @@ function update() {
     if (jogador.x < 0) jogador.x = 0;
     if (jogador.x + jogador.w > window.innerWidth) jogador.x = window.innerWidth - jogador.w;
 
-    bloodOverlay.style.opacity = jogador.hp < 30 ? (1 - jogador.hp / 30) : 0;
+    // Lógica Dragon Ball (Transforma aos 500 pontos)
+    if (score >= 500 && !jogador.musculado) dispararTransformacao();
 
+    bloodOverlay.style.opacity = jogador.hp < 30 ? (1 - jogador.hp / 30) : 0;
     spawnTimer++;
     if (spawnTimer > 35) { obstaculos.push(new Objeto()); spawnTimer = 0; }
 
@@ -167,30 +157,37 @@ function update() {
             obstaculos.splice(i, 1);
         } else if (o.y > window.innerHeight) { obstaculos.splice(i, 1); }
     }
-    if (jogador.hp <= 0) endGame();
+    if (jogador.hp <= 0) {
+        gameActive = false;
+        const rec = localStorage.getItem('kandal_record') || 0;
+        if (score > rec) localStorage.setItem('kandal_record', score);
+        document.getElementById("final-score").innerText = score;
+        document.getElementById("best-score").innerText = localStorage.getItem('kandal_record');
+        gameOverScreen.style.display = "flex";
+    }
     scoreDisplay.innerText = score;
     if (shakeTimer > 0) shakeTimer--;
 }
 
 function draw() {
     ctx.save();
-    if (shakeTimer > 0) ctx.translate(Math.random() * 8 - 4, Math.random() * 8 - 4);
+    if (shakeTimer > 0) ctx.translate(Math.random() * 15 - 7.5, Math.random() * 15 - 7.5);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (imagens['logo_kandal'] && imagens['logo_kandal'].complete) {
-        ctx.globalAlpha = 0.05;
-        ctx.drawImage(imagens['logo_kandal'], window.innerWidth/2 - 150, window.innerHeight/2 - 150, 300, 300);
-        ctx.globalAlpha = 1.0;
+    // Efeito de Aura se estiver a transformar
+    if (transformando) {
+        ctx.fillStyle = "rgba(255, 174, 0, " + (Math.random() * 0.5) + ")";
+        ctx.beginPath();
+        ctx.arc(jogador.x + jogador.w/2, jogador.y + jogador.h/2, 150, 0, Math.PI*2);
+        ctx.fill();
     }
 
-    ctx.fillStyle = "#111"; ctx.fillRect(0, window.innerHeight - 60, window.innerWidth, 60);
-    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 5; ctx.strokeRect(0, window.innerHeight - 60, window.innerWidth, 3);
-
-    const imgP = imagens['boneco_musculado'];
+    const imgP = jogador.musculado ? imagens['boneco_musculado'] : imagens['boneco'];
     if (imgP && imgP.complete && imgP.naturalWidth > 0) {
         ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
     } else {
-        ctx.fillStyle = "#333"; ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
+        ctx.fillStyle = jogador.musculado ? "#000" : "#777";
+        ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
     }
 
     obstaculos.forEach(o => o.draw());
@@ -198,7 +195,7 @@ function draw() {
     requestAnimationFrame(() => { update(); draw(); });
 }
 
-// Iniciar
+restartBtn.onclick = () => init();
 init();
 draw();
 </script>
