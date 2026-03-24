@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Rules & Style</title>
+    <title>Kandal Gym: Evolution</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #eee; font-family: 'Anton', sans-serif; touch-action: none; }
         
+        /* Menu Inicial */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 999; overflow-y: auto;
+            align-items: center; justify-content: center; z-index: 999;
         }
 
-        /* Secção de Regras */
         #rules-box {
             background: #fdfdfd; border: 2px dashed #000; padding: 15px;
             margin: 15px 0; width: 280px; font-family: sans-serif; font-size: 14px;
         }
         #rules-box h4 { margin: 0 0 5px 0; font-family: 'Anton'; color: #d00; text-transform: uppercase; }
-        #rules-box ul { padding-left: 20px; margin: 0; }
 
         .btn-kandal {
             background: #000; color: #fff; border: none; padding: 15px 40px;
             font-size: 22px; cursor: pointer; text-transform: uppercase;
-            box-shadow: 4px 4px 0px #d00; margin-bottom: 20px;
+            box-shadow: 4px 4px 0px #d00; margin-bottom: 10px; width: 250px;
         }
+        .btn-outline { background: #fff; color: #000; border: 3px solid #000; box-shadow: 4px 4px 0px #ccc; }
 
         #high-scores { width: 220px; background: #fff; border: 2px solid #000; padding: 10px; text-align: center; }
         .score-row { display: flex; justify-content: space-between; font-size: 16px; padding: 3px 0; border-bottom: 1px solid #eee; }
@@ -56,11 +56,11 @@
     
     <div id="rules-box">
         <h4>REGRAS DO TREINO:</h4>
-        <ul>
-            <li>🥗 <b>BOM:</b> Proteína e Legumes dão +100 pts e Vida.</li>
+        <ul style="padding-left: 20px; margin: 0;">
+            <li>🥗 <b>BOM:</b> Proteína/Legumes dão +100 pts e Vida.</li>
             <li>🍔 <b>MAU:</b> Fast food retira muita Vida!</li>
             <li>⚡ <b>EVOLUÇÃO:</b> Aos 1000 pts viras um Monstro.</li>
-            <li>💀 <b>MORTE:</b> Se a barra de vida chegar a zero, o treino acaba.</li>
+            <li>💀 <b>MORTE:</b> HP a zero = Fim do treino.</li>
         </ul>
     </div>
 
@@ -80,9 +80,11 @@
 <div id="trans-msg">ESTÁS UM MONSTRO!</div>
 
 <div id="game-over">
-    <h2 style="font-size:40px; color:#d00;">FALHA MUSCULAR</h2>
-    <p id="final-score-txt" style="font-size:25px;">PONTOS: 0</p>
+    <h2 style="font-size:40px; color:#d00; margin:0;">FALHA MUSCULAR</h2>
+    <p id="final-score-txt" style="font-size:25px; margin: 10px 0;">PONTOS: 0</p>
+    
     <button class="btn-kandal" onclick="iniciarJogo()">RECOMEÇAR</button>
+    <button class="btn-kandal btn-outline" onclick="voltarAoMenu()">SAIR PARA O MENU</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -94,8 +96,6 @@ const startScreen = document.getElementById("start-screen");
 const ui = document.getElementById("ui");
 const gameOverScreen = document.getElementById("game-over");
 
-// --- CONFIGURAÇÃO DO FUNDO ---
-// Podes mudar para qualquer cor (ex: "#f0f0f0", "#ffffff", "#000000")
 const COR_FUNDO = "#f8f8f8"; 
 
 let jogoIniciado = false;
@@ -107,7 +107,7 @@ resize();
 
 const imagens = {};
 const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=10'; });
+nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=11'; });
 
 function atualizarTabela() {
     let records = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
@@ -133,6 +133,14 @@ function iniciarJogo() {
     document.getElementById("trans-msg").style.display = "none";
 }
 
+function voltarAoMenu() {
+    jogoIniciado = false;
+    gameOverScreen.style.display = "none";
+    ui.style.display = "none";
+    startScreen.style.display = "flex";
+    atualizarTabela();
+}
+
 window.ontouchstart = (e) => touchX = e.touches[0].clientX;
 window.ontouchmove = (e) => touchX = e.touches[0].clientX;
 window.ontouchend = () => touchX = null;
@@ -156,11 +164,9 @@ class Obj {
 }
 
 function loop() {
-    // DESENHAR FUNDO
     ctx.fillStyle = COR_FUNDO;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Opcional: Desenhar grelha subtil de ginásio
     ctx.strokeStyle = "rgba(0,0,0,0.03)";
     for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
     for(let j=0; j<canvas.height; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
