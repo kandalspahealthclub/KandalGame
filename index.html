@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Stable Edition</title>
+    <title>Kandal Gym: Big Objects Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #eee; font-family: 'Anton', sans-serif; touch-action: none; }
@@ -65,7 +65,7 @@ const gameOverScreen = document.getElementById("game-over");
 
 let jogoIniciado = false;
 let jogador, score, obstaculos, touchX, transformando, shake = 0;
-let lastTime = 0; // Para o Delta Time
+let lastTime = 0;
 
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
@@ -73,7 +73,7 @@ resize();
 
 const imagens = {};
 const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=13'; });
+nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=14'; });
 
 function atualizarTabela() {
     let records = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
@@ -91,7 +91,7 @@ function salvarRecorde(s) {
 function iniciarJogo() {
     jogador = { w: 65, h: 100, x: canvas.width/2 - 32, y: canvas.height-160, speed: 450, hp: 100, musculado: false };
     score = 0; obstaculos = []; touchX = null; transformando = false; jogoIniciado = true;
-    lastTime = performance.now(); // Reset do tempo
+    lastTime = performance.now();
     document.getElementById("hp-bar").style.width = "100%";
     document.getElementById("score").innerText = "0";
     startScreen.style.display = "none";
@@ -117,10 +117,9 @@ class Obj {
         const tipos = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
         this.n = tipos[Math.floor(Math.random() * tipos.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
-        this.s = 45;
+        this.s = 60; // OBJETOS AUMENTADOS DE 45 PARA 60
         this.x = Math.random() * (canvas.width - this.s);
         this.y = -this.s;
-        // Velocidade baseada em pixels por segundo
         this.v = (300 + Math.random() * 200 + (score / 5)); 
     }
     draw(dt) {
@@ -132,7 +131,7 @@ class Obj {
 }
 
 function loop(currentTime) {
-    const dt = (currentTime - lastTime) / 1000; // Delta Time em segundos
+    const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
     ctx.fillStyle = "#f8f8f8";
@@ -163,12 +162,14 @@ function loop(currentTime) {
         if (imgP.complete && imgP.naturalWidth > 0) ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
         else { ctx.fillStyle = "#000"; ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h); }
 
-        if (Math.random() < 0.035 && !transformando) obstaculos.push(new Obj());
+        // Spawn ligeiramente ajustado para os novos tamanhos
+        if (Math.random() < 0.038 && !transformando) obstaculos.push(new Obj());
         
         for (let i = obstaculos.length - 1; i >= 0; i--) {
             const o = obstaculos[i]; o.draw(dt);
-            if (jogador.x + 10 < o.x + o.s - 10 && jogador.x + jogador.w - 10 > o.x + 10 && 
-                jogador.y + 10 < o.y + o.s - 10 && jogador.y + jogador.h - 10 > o.y + 10) {
+            // Ajuste na colisão para ser mais fiel ao tamanho visual
+            if (jogador.x + 8 < o.x + o.s - 8 && jogador.x + jogador.w - 8 > o.x + 8 && 
+                jogador.y + 8 < o.y + o.s - 8 && jogador.y + jogador.h - 8 > o.y + 8) {
                 if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
                 else { jogador.hp -= 20; shake = 10; }
                 document.getElementById("hp-bar").style.width = jogador.hp + "%";
