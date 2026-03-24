@@ -6,69 +6,60 @@
     <title>Kandal Gym: Evolution</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #ffffff; font-family: 'Anton', sans-serif; touch-action: none; color: #000; }
-        canvas { display: block; background: #fff; }
+        /* Garantir que nada fica invisível */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; font-family: 'Anton', sans-serif; }
         
-        /* Menu Inicial */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 200; text-align: center;
+            background: #ffffff; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 999;
         }
+
         .btn-kandal {
-            background: #000; color: #fff; border: none; padding: 20px 50px;
-            font-family: 'Anton', sans-serif; font-size: 28px; cursor: pointer;
-            box-shadow: 6px 6px 0px #d00; transition: 0.1s; text-transform: uppercase;
+            background: #000; color: #fff; border: none; padding: 25px 60px;
+            font-size: 30px; cursor: pointer; text-transform: uppercase;
+            box-shadow: 6px 6px 0px #d00; z-index: 1000;
         }
-        .btn-kandal:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #d00; }
 
-        /* UI de Jogo */
-        #ui { position: absolute; top: 30px; left: 20px; pointer-events: none; z-index: 50; display: none; }
+        #ui { position: absolute; top: 30px; left: 20px; z-index: 50; display: none; pointer-events: none; }
         .bar-outer { width: 180px; height: 20px; background: #222; border: 4px solid #000; }
-        #hp-bar { width: 100%; height: 100%; background: #d00; transition: width 0.2s; }
-        #score { font-size: 50px; color: #000; margin-top: 5px; letter-spacing: -2px; line-height: 0.8; }
+        #hp-bar { width: 100%; height: 100%; background: #d00; }
+        #score { font-size: 50px; color: #000; margin-top: 5px; }
 
-        /* Overlay de Dano */
-        #blood-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 40; opacity: 0;
-            box-shadow: inset 0 0 100px rgba(200, 0, 0, 0.8); transition: opacity 0.4s;
+        #trans-msg {
+            position: absolute; width: 100%; top: 40%; text-align: center;
+            font-size: 50px; color: #ffae00; text-shadow: 3px 3px 0px #000;
+            display: none; z-index: 60;
         }
 
         #game-over {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.95);
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; text-align: center;
+            z-index: 100;
         }
-
-        #trans-msg {
-            position: absolute; width: 100%; top: 40%; text-align: center;
-            font-size: 50px; color: #ffae00; text-shadow: 3px 3px 0px #000;
-            display: none; z-index: 60; font-style: italic;
-        }
+        
+        canvas { display: block; }
     </style>
 </head>
 <body>
 
 <div id="start-screen">
-    <div id="menu-logo-container" style="margin-bottom: 30px;"></div>
-    <button class="btn-kandal" id="start-btn">INICIAR TREINO</button>
+    <h1 style="font-size: 50px; margin-bottom: 20px; color: #000;">KANDAL GYM</h1>
+    <button class="btn-kandal" onclick="iniciarJogo()">INICIAR TREINO</button>
 </div>
-
-<div id="blood-overlay"></div>
-<div id="trans-msg">EVOLUÇÃO KANDAL!</div>
 
 <div id="ui">
     <div class="bar-outer"><div id="hp-bar"></div></div>
     <div id="score">0</div>
 </div>
 
+<div id="trans-msg">EVOLUÇÃO KANDAL!</div>
+
 <div id="game-over">
-    <h2 style="font-size:50px; color:#d00; margin:0;">FALHA MUSCULAR</h2>
-    <p style="font-size:25px; margin:5px 0;">SCORE: <span id="final-score">0</span></p>
-    <p style="font-size:25px; color:#daa520;">RECORD: <span id="best-score">0</span></p>
-    <button class="btn-kandal" id="restart-btn">RECOMEÇAR</button>
+    <h2 style="font-size:50px; color:#d00;">FALHA MUSCULAR</h2>
+    <p style="font-size:30px;">SCORE: <span id="final-score">0</span></p>
+    <button class="btn-kandal" onclick="iniciarJogo()">RECOMEÇAR</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -80,165 +71,127 @@ const startScreen = document.getElementById("start-screen");
 const ui = document.getElementById("ui");
 const gameOverScreen = document.getElementById("game-over");
 const transMsg = document.getElementById("trans-msg");
-const bloodOverlay = document.getElementById("blood-overlay");
-const menuLogoContainer = document.getElementById("menu-logo-container");
 
+let jogoIniciado = false;
+let jogador, score, obstaculos, touchX, transformando, shake = 0;
+
+// Ajuste de ecrã
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
 resize();
 
-// --- CARREGAMENTO DE IMAGENS ---
+// Carregar Imagens
 const imagens = {};
-const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico', 'logo_kandal'];
-
+const nomes = ['boneco_magro', 'boneco_musculado', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
 nomes.forEach(n => {
     imagens[n] = new Image();
-    imagens[n].src = n + '.png?v=5'; 
-    imagens[n].onload = () => {
-        if (n === 'logo_kandal' && menuLogoContainer.innerHTML === "") {
-            menuLogoContainer.innerHTML = `<img src="logo_kandal.png?v=5" style="width: 180px; height: 180px; object-fit: contain;">`;
-        }
-    };
+    imagens[n].src = n + '.png?v=6';
 });
 
-let jogador, score, spawnTimer, shakeTimer, obstaculos, touchX, gameActive, transformando;
-
-function init() {
-    // COMEÇA MAGRO (Pequeno e agil mas menos potente)
+function iniciarJogo() {
     jogador = {
         w: 70, h: 110,
-        x: window.innerWidth / 2 - 35,
-        y: window.innerHeight - 170,
+        x: canvas.width / 2 - 35,
+        y: canvas.height - 170,
         speed: 13, hp: 100, musculado: false 
     };
-    score = 0; spawnTimer = 0; shakeTimer = 0; obstaculos = []; touchX = null;
-    gameActive = true; transformando = false;
+    score = 0; obstaculos = []; touchX = null;
+    transformando = false; jogoIniciado = true;
     
     startScreen.style.display = "none";
-    ui.style.display = "block";
     gameOverScreen.style.display = "none";
-    transMsg.style.display = "none";
-    document.getElementById("hp-bar").style.width = "100%";
-    document.getElementById("score").innerText = "0";
+    ui.style.display = "block";
 }
 
-window.ontouchstart = (e) => { if(gameActive) touchX = e.touches[0].clientX; };
-window.ontouchmove = (e) => { if(gameActive) touchX = e.touches[0].clientX; };
+// Controlos
+window.ontouchstart = (e) => touchX = e.touches[0].clientX;
+window.ontouchmove = (e) => touchX = e.touches[0].clientX;
 window.ontouchend = () => touchX = null;
 
-class Objeto {
+class Obj {
     constructor() {
         const tipos = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-        this.nome = tipos[Math.floor(Math.random() * tipos.length)];
-        this.tipo = ['proteina', 'legumes', 'energetico'].includes(this.nome) ? 'bom' : 'mau';
-        this.size = 55;
-        this.x = Math.random() * (window.innerWidth - this.size);
-        this.y = -this.size;
-        this.vel = 5 + Math.random() * 4 + (score / 1500);
-        this.rot = Math.random() * Math.PI * 2;
+        this.n = tipos[Math.floor(Math.random() * tipos.length)];
+        this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
+        this.s = 55;
+        this.x = Math.random() * (canvas.width - this.s);
+        this.y = -this.s;
+        this.v = 5 + Math.random() * 4 + (score / 1500);
     }
-    update() { if(!transformando) this.y += this.vel; this.rot += 0.04; }
     draw() {
-        const img = imagens[this.nome];
-        ctx.save();
-        ctx.translate(this.x + this.size/2, this.y + this.size/2);
-        ctx.rotate(this.rot);
-        if (img && img.complete && img.naturalWidth > 0) ctx.drawImage(img, -this.size/2, -this.size/2, this.size, this.size);
-        else { ctx.fillStyle = this.tipo === 'bom' ? 'green' : 'red'; ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size); }
-        ctx.restore();
+        const img = imagens[this.n];
+        if (img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, this.x, this.y, this.s, this.s);
+        } else {
+            ctx.fillStyle = this.bom ? "green" : "red";
+            ctx.fillRect(this.x, this.y, this.s, this.s);
+        }
+        if (!transformando) this.y += this.v;
     }
 }
 
-function update() {
-    if (!gameActive || transformando) return;
-
-    if (touchX !== null) {
-        let centro = jogador.x + jogador.w / 2;
-        if (touchX < centro - 10) jogador.x -= jogador.speed;
-        else if (touchX > centro + 10) jogador.x += jogador.speed;
-    }
-    if (jogador.x < 0) jogador.x = 0;
-    if (jogador.x + jogador.w > window.innerWidth) jogador.x = window.innerWidth - jogador.w;
-
-    // --- EVOLUÇÃO AOS 1000 PONTOS ---
-    if (score >= 1000 && !jogador.musculado) {
-        transformando = true;
-        shakeTimer = 50;
-        transMsg.style.display = "block";
-        setTimeout(() => {
-            jogador.musculado = true;
-            jogador.w = 110; jogador.h = 165; // Vira monstro
-            jogador.y = window.innerHeight - 225;
-            jogador.speed = 17;
-            transformando = false;
-            transMsg.style.display = "none";
-        }, 1500);
-    }
-
-    bloodOverlay.style.opacity = jogador.hp < 30 ? (1 - jogador.hp / 30) : 0;
-    spawnTimer++;
-    if (spawnTimer > 35) { obstaculos.push(new Objeto()); spawnTimer = 0; }
-
-    for (let i = obstaculos.length - 1; i >= 0; i--) {
-        const o = obstaculos[i]; o.update();
-        if (jogador.x < o.x + o.size - 15 && jogador.x + jogador.w > o.x + 15 && 
-            jogador.y < o.y + o.size - 15 && jogador.y + jogador.h > o.y + 15) {
-            if (o.tipo === 'bom') { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
-            else { jogador.hp -= 20; shakeTimer = 10; }
-            document.getElementById("hp-bar").style.width = jogador.hp + "%";
-            document.getElementById("score").innerText = score;
-            obstaculos.splice(i, 1);
-        } else if (o.y > window.innerHeight) { obstaculos.splice(i, 1); }
-    }
-    
-    if (jogador.hp <= 0) {
-        gameActive = false;
-        const record = localStorage.getItem('kandal_record') || 0;
-        if (score > record) localStorage.setItem('kandal_record', score);
-        document.getElementById("final-score").innerText = score;
-        document.getElementById("best-score").innerText = localStorage.getItem('kandal_record');
-        gameOverScreen.style.display = "flex";
-    }
-    if (shakeTimer > 0) shakeTimer--;
-}
-
-function draw() {
-    ctx.save();
-    if (shakeTimer > 0) ctx.translate(Math.random() * 8 - 4, Math.random() * 8 - 4);
+function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (imagens['logo_kandal'] && imagens['logo_kandal'].complete) {
-        ctx.globalAlpha = 0.04;
-        ctx.drawImage(imagens['logo_kandal'], window.innerWidth/2 - 150, window.innerHeight/2 - 150, 300, 300);
-        ctx.globalAlpha = 1.0;
+    if (jogoIniciado) {
+        if (shake > 0) { ctx.save(); ctx.translate(Math.random()*8-4, Math.random()*8-4); shake--; }
+
+        // Movimento
+        if (touchX !== null) {
+            let centro = jogador.x + jogador.w / 2;
+            if (touchX < centro - 10) jogador.x -= jogador.speed;
+            if (touchX > centro + 10) jogador.x += jogador.speed;
+        }
+
+        // Evolução aos 1000 pontos
+        if (score >= 1000 && !jogador.musculado) {
+            transformando = true;
+            transMsg.style.display = "block";
+            shake = 50;
+            setTimeout(() => {
+                jogador.musculado = true;
+                jogador.w = 110; jogador.h = 165;
+                jogador.y = canvas.height - 225;
+                jogador.speed = 17;
+                transformando = false;
+                transMsg.style.display = "none";
+            }, 1500);
+        }
+
+        // Desenhar Jogador
+        const imgP = imagens[jogador.musculado ? 'boneco_musculado' : 'boneco_magro'];
+        if (imgP.complete && imgP.naturalWidth > 0) {
+            ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
+        } else {
+            ctx.fillStyle = "#000";
+            ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
+        }
+
+        // Objetos
+        if (Math.random() < 0.03 && !transformando) obstaculos.push(new Obj());
+        for (let i = obstaculos.length - 1; i >= 0; i--) {
+            const o = obstaculos[i]; o.draw();
+            if (jogador.x < o.x + o.s && jogador.x + jogador.w > o.x && jogador.y < o.y + o.s && jogador.y + jogador.h > o.y) {
+                if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
+                else { jogador.hp -= 20; shake = 10; }
+                document.getElementById("hp-bar").style.width = jogador.hp + "%";
+                document.getElementById("score").innerText = score;
+                obstaculos.splice(i, 1);
+            } else if (o.y > canvas.height) { obstaculos.splice(i, 1); }
+        }
+
+        if (jogador.hp <= 0) {
+            jogoIniciado = false;
+            document.getElementById("final-score").innerText = score;
+            gameOverScreen.style.display = "flex";
+        }
+        if (shake > 0) ctx.restore();
     }
 
-    ctx.fillStyle = "#eee"; ctx.fillRect(0, window.innerHeight - 50, window.innerWidth, 50);
-
-    // Efeito de Aura na Evolução
-    if (transformando) {
-        ctx.shadowBlur = 40; ctx.shadowColor = "#ffae00";
-        ctx.fillStyle = "rgba(255, 174, 0, 0.2)";
-        ctx.beginPath();
-        ctx.arc(jogador.x + jogador.w/2, jogador.y + jogador.h/2, 110, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-
-    const imgNome = jogador.musculado ? 'boneco_musculado' : 'boneco_magro';
-    const imgP = imagens[imgNome];
-    if (imgP && imgP.complete && imgP.naturalWidth > 0) ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
-    else { ctx.fillStyle = jogador.musculado ? "#000" : "#999"; ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h); }
-
-    obstaculos.forEach(o => o.draw());
-    ctx.restore();
-    requestAnimationFrame(() => { update(); draw(); });
+    requestAnimationFrame(loop);
 }
 
-document.getElementById("start-btn").onclick = () => init();
-document.getElementById("restart-btn").onclick = () => init();
-draw();
-ui.style.display = "none";
+loop();
 </script>
 </body>
 </html>
