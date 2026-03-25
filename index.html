@@ -3,14 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Legends Loader</title>
+    <title>Kandal Gym: Legends</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icon_kandal.png">
+    <link rel="apple-touch-icon" href="icon_kandal.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; touch-action: none; }
         
+        /* ECRÃ INICIAL PREMIUM */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #333 0%, #000 100%);
+            background: radial-gradient(circle at center, #222 0%, #000 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #fff;
         }
         #menu-logo { width: 180px; margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.5)); }
@@ -20,33 +31,35 @@
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 15px;
             padding: 12px; margin-bottom: 20px; width: 280px; font-size: 13px;
         }
-        #rules-box h4 { margin: 0 0 8px 0; font-family: 'Anton'; color: #ff416c; text-transform: uppercase; letter-spacing: 1px; }
+        #rules-box h4 { margin: 0 0 8px 0; font-family: 'Anton'; color: #ff416c; text-transform: uppercase; }
         
         .btn-kandal {
             background: #fff; color: #000; border: none; border-radius: 10px;
             padding: 18px 45px; font-size: 22px; cursor: pointer; text-transform: uppercase;
-            font-family: 'Anton'; width: 270px; margin-bottom: 20px; transition: 0.2s;
+            font-family: 'Anton'; width: 270px; margin-bottom: 15px; transition: 0.2s;
         }
         .btn-kandal:active { transform: scale(0.95); }
 
         #high-scores {
             width: 270px; background: rgba(0, 0, 0, 0.4); border-radius: 12px;
-            padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);
         }
         #high-scores h3 { margin: 0 0 10px 0; font-family: 'Anton'; font-size: 18px; text-align: center; color: #fff; }
         .score-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
 
+        /* INTERFACE DO JOGO */
         #ui { 
-            position: absolute; top: 25px; left: 20px; z-index: 50; display: none; 
+            position: absolute; top: 35px; left: 20px; z-index: 50; display: none; 
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-            padding: 18px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 15px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .bar-outer { width: 160px; height: 12px; background: #e0e0e0; border-radius: 20px; overflow: hidden; margin: 8px 0; }
+        .bar-outer { width: 150px; height: 10px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 5px 0; }
         #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); transition: width 0.3s; }
-        #score { font-family: 'Anton'; font-size: 50px; color: #111; line-height: 1; }
+        #score { font-family: 'Anton'; font-size: 45px; color: #111; line-height: 1; }
 
-        #evo-msg { position: absolute; width: 100%; top: 35%; text-align: center; font-family: 'Anton'; font-size: 50px; color: #ffae00; text-shadow: 3px 3px 0 #000; display: none; z-index: 100; pointer-events: none; }
+        #evo-msg { position: absolute; width: 100%; top: 35%; text-align: center; font-family: 'Anton'; font-size: 45px; color: #ffae00; text-shadow: 3px 3px 0 #000; display: none; z-index: 100; pointer-events: none; }
         #game-over { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
+        
         canvas { display: block; background: #fff; }
     </style>
 </head>
@@ -56,24 +69,25 @@
     <img src="logo_kandal.png" id="menu-logo">
     
     <div id="rules-box">
-        <h4>Regras de Ouro:</h4>
+        <h4>Evoluções:</h4>
         <ul style="padding-left:18px; margin:0; color:#ccc; list-style: square;">
-            <li>Foca na <b>Proteína e Legumes</b> (+HP).</li>
-            <li>Evita o <b>Lixo/Fast Food</b> (-HP).</li>
-            <li>Evolui até ao <b>Arnaldo (6000 pts)</b>.</li>
+            <li>1000: Monstro Kandal</li>
+            <li>2000: CBUM</li>
+            <li>4000: Ronnie Coleman</li>
+            <li>6000: Arnold Schwarzenegger</li>
         </ul>
     </div>
 
-    <button class="btn-kandal" onclick="iniciarJogo()">INICIAR TREINO</button>
+    <button class="btn-kandal" onclick="iniciarJogo()">TREINAR AGORA</button>
     
     <div id="high-scores">
-        <h3>TOP RECORDES</h3>
+        <h3>MELHORES TREINOS</h3>
         <div id="scores-list"></div>
     </div>
 </div>
 
 <div id="ui">
-    <div style="font-size:11px; font-weight:900; color:#555; text-transform:uppercase; letter-spacing:1px;">Energia Muscular</div>
+    <div style="font-size:10px; font-weight:900; color:#555; text-transform:uppercase;">Energia Muscular</div>
     <div class="bar-outer"><div id="hp-bar"></div></div>
     <div id="score">0</div>
 </div>
@@ -81,8 +95,8 @@
 <div id="evo-msg">EVOLUÇÃO!</div>
 
 <div id="game-over">
-    <h2 style="font-family:'Anton'; font-size:55px; color:#d00; margin:0;">FALHA TOTAL</h2>
-    <p id="final-score-txt" style="font-size:28px; margin: 20px 0; font-weight:800;">0 PTS</p>
+    <h2 style="font-family:'Anton'; font-size:50px; color:#d00; margin:0;">FALHA TOTAL</h2>
+    <p id="final-score-txt" style="font-size:24px; margin: 15px 0; font-weight:800;">0 PTS</p>
     <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">REPETIR</button>
     <button class="btn-kandal" style="background:#fff; color:#000; border:2px solid #000; margin-top:5px;" onclick="voltarAoMenu()">MENU</button>
 </div>
@@ -104,26 +118,16 @@ function resize() { canvas.width = window.innerWidth; canvas.height = window.inn
 window.addEventListener('resize', resize);
 resize();
 
-// --- CARREGAMENTO INTELIGENTE DE IMAGENS ---
+// --- GESTÃO DE IMAGENS ---
 const imagens = {};
-const itensComida = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-const personagens = ['boneco_magro', 'boneco_musculado', 'cbum', 'ronnie', 'arnaldo'];
+const comida = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
+const herois = ['boneco_magro', 'boneco_musculado', 'cbum', 'ronnie', 'arnaldo'];
 
-// Carregar itens de comida (geralmente .png simples)
-itensComida.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; });
-
-// Carregar personagens com fallback de extensão (.png -> .jpg)
-personagens.forEach(n => {
+comida.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; });
+herois.forEach(n => {
     imagens[n] = new Image();
-    imagens[n].src = n + '.png'; // Tenta .png primeiro
-    imagens[n].onerror = function() {
-        if (this.src.includes('.png')) {
-            console.log(`Tentando .jpg para ${n}...`);
-            this.src = n + '.jpg'; // Se falhar .png, tenta .jpg
-        } else {
-            console.error(`Falha total no carregamento de ${n}`);
-        }
-    };
+    imagens[n].src = n + '.png';
+    imagens[n].onerror = function() { if(!this.src.includes('.jpg')) this.src = n + '.jpg'; };
 });
 
 function atualizarTabela() {
@@ -164,8 +168,7 @@ window.ontouchend = () => touchX = null;
 
 class Obj {
     constructor() {
-        const tipos = itensComida;
-        this.n = tipos[Math.floor(Math.random() * tipos.length)];
+        this.n = comida[Math.floor(Math.random() * comida.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
         this.s = 65;
         this.x = Math.random() * (canvas.width - this.s);
@@ -175,7 +178,7 @@ class Obj {
     draw(dt) {
         const img = imagens[this.n];
         if (img && img.complete && img.naturalWidth > 0) ctx.drawImage(img, this.x, this.y, this.s, this.s);
-        else { ctx.fillStyle = this.bom ? "#4CAF50" : "#F44336"; ctx.fillRect(this.x, this.y, this.s, this.s); }
+        else { ctx.fillStyle = this.bom ? "green" : "red"; ctx.fillRect(this.x, this.y, this.s, this.s); }
         if (!transformando) this.y += this.v * dt;
     }
 }
@@ -183,12 +186,14 @@ class Obj {
 function dispararEvolucao(msg, nivel, vel) {
     transformando = true; shake = 60;
     evoMsg.innerText = msg; evoMsg.style.display = "block";
+    canvas.style.filter = "brightness(2) contrast(1.5)"; 
     setTimeout(() => {
         jogador.nivel = nivel;
-        jogador.w = 100; jogador.h = 160;
-        jogador.y = canvas.height - 210;
+        jogador.w = 110; jogador.h = 175;
+        jogador.y = canvas.height - 230;
         jogador.speed = vel;
         transformando = false; evoMsg.style.display = "none";
+        canvas.style.filter = "none";
     }, 1200);
 }
 
@@ -197,6 +202,7 @@ function loop(currentTime) {
     lastTime = currentTime;
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
     
+    // Grelha de Movimento
     ctx.strokeStyle = "rgba(0,0,0,0.03)";
     for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
 
@@ -211,22 +217,17 @@ function loop(currentTime) {
         if (jogador.x < 0) jogador.x = 0;
         if (jogador.x > canvas.width - jogador.w) jogador.x = canvas.width - jogador.w;
 
-        // EVOLUÇÕES
+        // LÓGICA DE NÍVEIS
         if (score >= 1000 && score < 2000 && jogador.nivel === 'boneco_magro') dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 560);
-        else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') dispararEvolucao("CBUM ATIVADO!", "cbum", 610);
-        else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') dispararEvolucao("YEAH BUDDY!", "ronnie", 660);
-        else if (score >= 6000 && score < 6100 && jogador.nivel === 'ronnie') dispararEvolucao("O ARNOLD!", "arnaldo", 710);
+        else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') dispararEvolucao("CBUM ATIVADO!", "cbum", 620);
+        else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') dispararEvolucao("YEAH BUDDY!", "ronnie", 670);
+        else if (score >= 6000 && jogador.nivel === 'ronnie') dispararEvolucao("THE OAK!", "arnaldo", 730);
 
         const imgP = imagens[jogador.nivel];
-        // DESENHO DO JOGADOR COM VERIFICAÇÃO EXTRA
         if (imgP && imgP.complete && imgP.naturalWidth > 0) {
             ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
         } else {
-            // Se falhar o desenho, desenha um bloco escuro (não branco) para manter a sensação de jogo
-            ctx.fillStyle = "#1a1a1a";
-            ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
-            ctx.fillStyle = "#fff"; ctx.font = "bold 12px sans-serif";
-            ctx.fillText("Loading...", jogador.x + 10, jogador.y + 30);
+            ctx.fillStyle = "#111"; ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
         }
         
         if (Math.random() < 0.04 && !transformando) obstaculos.push(new Obj());
