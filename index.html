@@ -239,9 +239,10 @@ function loop(currentTime) {
         }
         
         if (jogador.hp <= 0) { 
+            const finalScore = score; // Criamos uma constante com o valor exato no fim
             jogoIniciado = false; 
-            document.getElementById("final-score-txt").innerText = score + " PTS";
-            salvarRecorde(score); 
+            document.getElementById("final-score-txt").innerText = finalScore + " PTS";
+            salvarRecorde(finalScore); 
             gameOverScreen.style.display = "flex"; 
             pauseBtn.style.display = "none"; 
         }
