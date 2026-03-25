@@ -37,6 +37,11 @@
             text-transform: uppercase; width: 280px; margin-bottom: 15px;
         }
 
+        #install-btn {
+            background: #ffae00; color: #000; font-size: 16px; padding: 10px;
+            display: none; /* Só aparece via JS */
+        }
+
         #high-scores {
             width: 280px; background: rgba(255, 255, 255, 0.05); border-radius: 12px;
             padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
@@ -81,6 +86,7 @@
         </ul>
     </div>
     <button class="btn-kandal" onclick="iniciarJogo()">COMEÇAR TREINO</button>
+    <button id="install-btn" class="btn-kandal" onclick="instalarApp()">INSTALAR APP</button>
     <div id="high-scores">
         <h3 style="margin:0 0 8px 0; font-family:'Anton'; font-size:14px; text-align:center; color:#ffae00;">MELHORES TREINOS</h3>
         <div id="scores-list"></div>
@@ -110,7 +116,7 @@
     <p id="final-score-txt" style="font-size:35px; font-weight:900; margin: 20px 0; color:#000;">--- PTS</p>
     
     <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">REPETIR TREINO</button>
-    <button class="btn-kandal" style="background:transparent; color:#000; border:2px solid #000;" onclick="location.reload()">MENU PRINCIPAL</button>
+    <button class="btn-kandal" style="background:transparent; color:#000; border:2px solid #000;" onclick="voltarAoMenu()">MENU PRINCIPAL</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -124,9 +130,26 @@ const pauseBtn = document.getElementById("pause-btn");
 const pauseScreen = document.getElementById("pause-screen");
 const gameOverScreen = document.getElementById("game-over");
 const evoMsg = document.getElementById("evo-msg");
+const installBtn = document.getElementById("install-btn");
 
 let jogoIniciado = false, emPausa = false;
-let jogador, score, obstaculos, touchX, transformando, lastMilestone = 0, lastTime = 0, shake = 0;
+let jogador, score, obstaculos, touchX, transformando, lastMilestone = 0, lastTime = 0;
+let deferredPrompt;
+
+// Lógica de Instalação PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+});
+
+async function instalarApp() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') installBtn.style.display = 'none';
+    deferredPrompt = null;
+}
 
 const somRonnie = new Audio('lightweight.mp3');
 function tocarSom() { somRonnie.currentTime = 0; somRonnie.play().catch(e => {}); }
@@ -169,6 +192,25 @@ function iniciarJogo() {
     pauseBtn.style.display = "block";
 }
 
+function voltarAoMenu() {
+    jogoIniciado = false;
+    gameOverScreen.style.display = "none";
+    ui.style.display = "none";
+    pauseBtn.style.display = "none";
+    startScreen.style.display = "flex";
+    atualizarTabela();
+}
+
+function terminarJogo() {
+    jogoIniciado = false;
+    const finalScore = score;
+    document.getElementById("final-score-txt").innerText = finalScore + " PTS";
+    salvarRecorde(finalScore);
+    ui.style.display = "none";
+    pauseBtn.style.display = "none";
+    gameOverScreen.style.display = "flex";
+}
+
 function alternarPausa() {
     if (!jogoIniciado) return;
     emPausa = !emPausa;
@@ -204,22 +246,6 @@ function dispararEvolucao(msg, nivel, vel) {
     }, 1200);
 }
 
-function terminarJogo() {
-    jogoIniciado = false;
-    const finalScore = score;
-    
-    // Atualiza o texto imediatamente
-    document.getElementById("final-score-txt").innerText = finalScore + " PTS";
-    
-    // Salva nos recordes
-    salvarRecorde(finalScore);
-    
-    // Esconde interface e mostra derrota
-    ui.style.display = "none";
-    pauseBtn.style.display = "none";
-    gameOverScreen.style.display = "flex";
-}
-
 function loop(currentTime) {
     if (emPausa) { requestAnimationFrame(loop); return; }
     const dt = (currentTime - lastTime) / 1000;
@@ -250,21 +276,14 @@ function loop(currentTime) {
             const o = obstaculos[i]; o.draw(dt);
             if (jogador.x + 15 < o.x + o.s - 15 && jogador.x + jogador.w - 15 > o.x + 15 && 
                 jogador.y + 15 < o.y + o.s - 15 && jogador.y + jogador.h - 15 > o.y + 10) {
-                if (o.bom) { 
-                    score += 100; 
-                    jogador.hp = Math.min(100, jogador.hp + 5); 
-                } else { 
-                    jogador.hp -= 22; 
-                }
+                if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
+                else { jogador.hp -= 22; }
                 document.getElementById("hp-bar").style.width = Math.max(0, jogador.hp) + "%";
                 document.getElementById("score").innerText = score;
                 obstaculos.splice(i, 1);
             } else if (o.y > canvas.height) { obstaculos.splice(i, 1); }
         }
-        
-        if (jogador.hp <= 0) { 
-            terminarJogo();
-        }
+        if (jogador.hp <= 0) terminarJogo();
     }
     requestAnimationFrame(loop);
 }
