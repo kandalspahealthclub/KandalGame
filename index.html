@@ -58,7 +58,13 @@
         #score { font-family: 'Anton'; font-size: 45px; color: #111; line-height: 1; }
         #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); transition: width 0.3s; }
         #evo-msg { position: absolute; width: 100%; top: 35%; text-align: center; font-family: 'Anton'; font-size: 45px; color: #ffae00; display: none; z-index: 100; text-shadow: 3px 3px 0 #000; pointer-events: none; }
-        #game-over { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
+        
+        #game-over { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.98); display: none; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 110; 
+        }
+        
         canvas { display: block; background: #fff; }
     </style>
 </head>
@@ -101,8 +107,10 @@
 
 <div id="game-over">
     <h2 style="font-family:'Anton'; font-size:50px; color:#d00; margin:0;">OVERTRAINING</h2>
-    <p id="final-score-txt" style="font-size:30px; font-weight:800; margin: 20px 0; color:#000;">0 PTS</p>
-    <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">TENTAR NOVAMENTE</button>
+    <p id="final-score-txt" style="font-size:35px; font-weight:900; margin: 20px 0; color:#000;">--- PTS</p>
+    
+    <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">REPETIR TREINO</button>
+    <button class="btn-kandal" style="background:transparent; color:#000; border:2px solid #000;" onclick="location.reload()">MENU PRINCIPAL</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -187,13 +195,29 @@ class Obj {
 }
 
 function dispararEvolucao(msg, nivel, vel) {
-    transformando = true; shake = 80; tocarSom();
+    transformando = true; tocarSom();
     evoMsg.innerText = msg; evoMsg.style.display = "block";
     setTimeout(() => {
         jogador.nivel = nivel; jogador.speed = vel;
         jogador.w = 110; jogador.h = 175; jogador.y = canvas.height - 230;
         transformando = false; evoMsg.style.display = "none";
     }, 1200);
+}
+
+function terminarJogo() {
+    jogoIniciado = false;
+    const finalScore = score;
+    
+    // Atualiza o texto imediatamente
+    document.getElementById("final-score-txt").innerText = finalScore + " PTS";
+    
+    // Salva nos recordes
+    salvarRecorde(finalScore);
+    
+    // Esconde interface e mostra derrota
+    ui.style.display = "none";
+    pauseBtn.style.display = "none";
+    gameOverScreen.style.display = "flex";
 }
 
 function loop(currentTime) {
@@ -239,12 +263,7 @@ function loop(currentTime) {
         }
         
         if (jogador.hp <= 0) { 
-            const finalScore = score; // Criamos uma constante com o valor exato no fim
-            jogoIniciado = false; 
-            document.getElementById("final-score-txt").innerText = finalScore + " PTS";
-            salvarRecorde(finalScore); 
-            gameOverScreen.style.display = "flex"; 
-            pauseBtn.style.display = "none"; 
+            terminarJogo();
         }
     }
     requestAnimationFrame(loop);
