@@ -3,20 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kandal Gym: Legends Fixed</title>
+    <title>Kandal Gym: Legends & Records</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #ffffff; font-family: 'Inter', sans-serif; touch-action: none; }
-        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #222 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #fff; }
-        #menu-logo { width: 190px; height: auto; margin-bottom: 5px; filter: drop-shadow(0 0 10px rgba(221, 0, 0, 0.4)); }
-        #rules-box { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin: 15px 0; width: 270px; font-size: 13px; }
-        #rules-box h4 { margin: 0 0 8px 0; font-family: 'Anton'; color: #ff416c; text-transform: uppercase; }
-        .btn-kandal { background: #fff; color: #000; border: none; border-radius: 8px; padding: 16px 40px; font-size: 20px; cursor: pointer; text-transform: uppercase; font-family: 'Anton'; width: 260px; }
-        #ui { position: absolute; top: 20px; left: 20px; z-index: 50; display: none; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); padding: 15px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #222 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #fff;
+        }
+        #menu-logo { width: 180px; height: auto; margin-bottom: 5px; filter: drop-shadow(0 0 10px rgba(221, 0, 0, 0.4)); }
+
+        #rules-box {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+            padding: 12px; margin: 10px 0; width: 270px; font-size: 12px;
+        }
+        #rules-box h4 { margin: 0 0 5px 0; font-family: 'Anton'; color: #ff416c; text-transform: uppercase; }
+
+        .btn-kandal {
+            background: #fff; color: #000; border: none; border-radius: 8px;
+            padding: 16px 40px; font-size: 20px; cursor: pointer; text-transform: uppercase;
+            font-family: 'Anton'; width: 260px; margin-bottom: 15px;
+        }
+
+        /* TABELA DE RECORDES RECOLOCADA */
+        #high-scores {
+            width: 250px; background: rgba(0, 0, 0, 0.3); border-radius: 10px;
+            padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; font-size: 13px; color: #aaa;
+        }
+        #high-scores h3 { margin: 0 0 5px 0; font-family: 'Anton'; font-size: 16px; color: #fff; text-transform: uppercase; }
+        .score-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .score-row b { color: #ffae00; }
+
+        /* UI DO JOGO */
+        #ui { 
+            position: absolute; top: 20px; left: 20px; z-index: 50; display: none; 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
+            padding: 15px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
         .hp-label { font-size: 11px; text-transform: uppercase; color: #555; font-weight: 800; }
         .bar-outer { width: 160px; height: 10px; background: rgba(0,0,0,0.05); border-radius: 20px; overflow: hidden; }
         #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); transition: width 0.3s; }
         #score { font-family: 'Anton', sans-serif; font-size: 45px; color: #111; }
+
         #evo-msg { position: absolute; width: 100%; top: 30%; text-align: center; font-family: 'Anton'; font-size: 40px; color: #ffae00; text-shadow: 2px 2px 0 #000; display: none; z-index: 100; pointer-events: none; }
         #game-over { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 110; }
         canvas { display: block; background: #fff; }
@@ -27,15 +59,20 @@
 <div id="start-screen">
     <img src="logo_kandal.png" id="menu-logo">
     <div id="rules-box">
-        <h4>Evolução de Lendas:</h4>
-        <ul style="padding-left:18px; margin:0; list-style:none; color:#ddd;">
+        <h4>Evoluções:</h4>
+        <ul style="padding-left:15px; margin:0; list-style:none; color:#ddd;">
             <li>⚡ 1000: Monstro Kandal</li>
-            <li>⚡ 2000: Estilo CBUM</li>
-            <li>⚡ 4000: YEAH BUDDY! (Ronnie)</li>
-            <li>⚡ 6000: O Carvalho Austríaco (Arnaldo)</li>
+            <li>⚡ 2000: CBUM</li>
+            <li>⚡ 4000: Ronnie Coleman</li>
+            <li>⚡ 6000: Arnaldo</li>
         </ul>
     </div>
     <button class="btn-kandal" onclick="iniciarJogo()">COMEÇAR TREINO</button>
+    
+    <div id="high-scores">
+        <h3>Melhores Treinos</h3>
+        <div id="scores-list"></div>
+    </div>
 </div>
 
 <div id="ui">
@@ -50,7 +87,7 @@
     <h2 style="font-family:'Anton'; font-size:45px; color:#d00; margin:0;">FALHA TOTAL</h2>
     <p id="final-score-txt" style="font-size:24px; margin: 15px 0; font-weight:bold;">0 PTS</p>
     <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">REPETIR</button>
-    <button class="btn-kandal" style="background:#fff; color:#000; border:2px solid #000; margin-top:10px;" onclick="voltarAoMenu()">MENU</button>
+    <button class="btn-kandal" style="background:#fff; color:#000; border:2px solid #000; margin-top:5px;" onclick="voltarAoMenu()">MENU</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -72,7 +109,14 @@ resize();
 
 const imagens = {};
 const nomes = ['boneco_magro', 'boneco_musculado', 'cbum', 'ronnie', 'arnaldo', 'chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
-nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=19'; });
+nomes.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png?v=20'; });
+
+function atualizarTabela() {
+    let records = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
+    document.getElementById("scores-list").innerHTML = records.map((s, i) => `
+        <div class="score-row"><span>${i+1}º Lugar</span> <b>${s} pts</b></div>
+    `).join('');
+}
 
 function salvarRecorde(s) {
     let r = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
@@ -81,10 +125,7 @@ function salvarRecorde(s) {
 }
 
 function iniciarJogo() {
-    jogador = { 
-        w: 65, h: 100, x: canvas.width/2 - 32, y: canvas.height-160, 
-        speed: 500, hp: 100, nivel: 'magro' 
-    };
+    jogador = { w: 65, h: 100, x: canvas.width/2 - 32, y: canvas.height-160, speed: 500, hp: 100, nivel: 'boneco_magro' };
     score = 0; obstaculos = []; touchX = null; transformando = false; jogoIniciado = true;
     lastTime = performance.now();
     document.getElementById("hp-bar").style.width = "100%";
@@ -99,6 +140,7 @@ function voltarAoMenu() {
     gameOverScreen.style.display = "none";
     ui.style.display = "none";
     startScreen.style.display = "flex";
+    atualizarTabela();
 }
 
 window.ontouchstart = (e) => touchX = e.touches[0].clientX;
@@ -123,70 +165,42 @@ class Obj {
 }
 
 function dispararEvolucao(nome, novoNivel, bonusSpeed) {
-    transformando = true;
-    shake = 60;
+    transformando = true; shake = 60;
     evoMsg.innerText = nome;
     evoMsg.style.display = "block";
-    
     setTimeout(() => {
         jogador.nivel = novoNivel;
-        jogador.w = 90; 
-        jogador.h = 145;
+        jogador.w = 90; jogador.h = 145;
         jogador.y = canvas.height - 200;
         jogador.speed = bonusSpeed;
-        transformando = false;
-        evoMsg.style.display = "none";
+        transformando = false; evoMsg.style.display = "none";
     }, 1200);
 }
 
 function loop(currentTime) {
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
-
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     if (jogoIniciado) {
         if (shake > 0) { ctx.save(); ctx.translate(Math.random()*10-5, Math.random()*10-5); shake--; }
-
         if (touchX !== null) {
             let centro = jogador.x + jogador.w / 2;
             let dist = touchX - centro;
             if (Math.abs(dist) > 5) jogador.x += (dist > 0 ? 1 : -1) * jogador.speed * dt;
         }
-        
         if (jogador.x < 0) jogador.x = 0;
         if (jogador.x > canvas.width - jogador.w) jogador.x = canvas.width - jogador.w;
 
-        // --- SISTEMA DE EVOLUÇÃO CORRIGIDO ---
-        // Magro -> Musculado (1000 pts)
-        if (score >= 1000 && score < 2000 && jogador.nivel === 'magro') {
-            dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 550);
-        }
-        // Musculado -> CBUM (2000 pts)
-        else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') {
-            dispararEvolucao("CBUM ATIVADO!", "cbum", 600);
-        }
-        // CBUM -> Ronnie (4000 pts)
-        else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') {
-            dispararEvolucao("YEAH BUDDY!", "ronnie", 650);
-        }
-        // Ronnie -> Arnaldo (6000 pts)
-        else if (score >= 6000 && jogador.nivel === 'ronnie') {
-            dispararEvolucao("O ARNOLD!", "arnaldo", 700);
-        }
+        // SISTEMA DE NÍVEIS
+        if (score >= 1000 && score < 2000 && jogador.nivel === 'boneco_magro') dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 550);
+        else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') dispararEvolucao("ESTILO CBUM!", "cbum", 600);
+        else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') dispararEvolucao("YEAH BUDDY!", "ronnie", 650);
+        else if (score >= 6000 && jogador.nivel === 'ronnie') dispararEvolucao("O ARNOLD!", "arnaldo", 700);
 
-        // Seleção da imagem com base no nível atual (Garante que a imagem muda)
-        const imgNome = jogador.nivel;
-        const imgP = imagens[imgNome];
-        
-        if (imgP && imgP.complete) {
-            ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
-        } else {
-            // Fallback: desenha um bloco preto se a imagem falhar
-            ctx.fillStyle = "#000";
-            ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
-        }
+        const imgP = imagens[jogador.nivel];
+        if (imgP && imgP.complete) ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
         
         if (Math.random() < 0.04 && !transformando) obstaculos.push(new Obj());
         
@@ -201,7 +215,6 @@ function loop(currentTime) {
                 obstaculos.splice(i, 1);
             } else if (o.y > canvas.height) { obstaculos.splice(i, 1); }
         }
-
         if (jogador.hp <= 0) {
             jogoIniciado = false; salvarRecorde(score);
             document.getElementById("final-score-txt").innerText = score + " PONTOS";
@@ -211,6 +224,7 @@ function loop(currentTime) {
     }
     requestAnimationFrame(loop);
 }
+atualizarTabela();
 requestAnimationFrame(loop);
 </script>
 </body>
