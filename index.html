@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Kandal Gym: Lightweight Edition</title>
+    <title>Kandal Gym: Legends</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,10 +16,47 @@
     
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; touch-action: none; }
-        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #222 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #fff; }
-        #menu-logo { width: 180px; margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.5)); }
-        .btn-kandal { background: #fff; color: #000; border: none; border-radius: 10px; padding: 18px 45px; font-size: 22px; cursor: pointer; font-family: 'Anton'; text-transform: uppercase; width: 270px; margin-bottom: 15px; }
-        #ui { position: absolute; top: 50px; left: 20px; z-index: 50; display: none; background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        /* MENU INICIAL DIRETO (SEM SPLASH) */
+        #start-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 999; color: #fff; 
+        }
+        #menu-logo { width: 150px; margin-bottom: 20px; }
+        
+        #rules-box {
+            background: rgba(255, 255, 255, 0.1); border-radius: 15px;
+            padding: 15px; margin-bottom: 20px; width: 280px; font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #rules-box h4 { margin: 0 0 10px 0; font-family: 'Anton'; color: #ff416c; text-transform: uppercase; }
+
+        .btn-kandal { 
+            background: #fff; color: #000; border: none; border-radius: 12px; 
+            padding: 18px; font-size: 22px; cursor: pointer; font-family: 'Anton'; 
+            text-transform: uppercase; width: 280px; margin-bottom: 15px;
+        }
+
+        #high-scores {
+            width: 280px; background: rgba(255, 255, 255, 0.05); border-radius: 12px;
+            padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .score-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+
+        /* INTERFACE E PAUSA */
+        #ui { position: absolute; top: 50px; left: 20px; z-index: 50; display: none; background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 20px; }
+        #pause-btn {
+            position: absolute; top: 50px; right: 20px; z-index: 100; display: none;
+            background: #fff; border: none; border-radius: 50%; width: 45px; height: 45px;
+            font-family: 'Anton'; font-size: 18px; font-weight: bold; cursor: pointer;
+        }
+        #pause-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 200; color: #fff;
+        }
+
         #score { font-family: 'Anton'; font-size: 45px; color: #111; line-height: 1; }
         #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); transition: width 0.3s; }
         #evo-msg { position: absolute; width: 100%; top: 35%; text-align: center; font-family: 'Anton'; font-size: 45px; color: #ffae00; display: none; z-index: 100; text-shadow: 3px 3px 0 #000; pointer-events: none; }
@@ -31,14 +68,33 @@
 
 <div id="start-screen">
     <img src="logo_kandal.png" id="menu-logo">
-    <button class="btn-kandal" onclick="iniciarJogo()">PUXAR FERRO</button>
-    <p style="color:#666; font-size:12px; font-weight:bold; letter-spacing:1px;">LIGHTWEIGHT BABY!</p>
+    <div id="rules-box">
+        <h4>Regras do Ginásio:</h4>
+        <ul style="padding-left:18px; margin:0; color:#ddd; list-style: square;">
+            <li>Proteína/Legumes: <b>+ Energia</b></li>
+            <li>Lixo/Doces: <b>- Energia</b></li>
+            <li>Ronnie Coleman a cada <b>800 pts</b>!</li>
+        </ul>
+    </div>
+    <button class="btn-kandal" onclick="iniciarJogo()">COMEÇAR TREINO</button>
+    <div id="high-scores">
+        <h3 style="margin:0 0 8px 0; font-family:'Anton'; font-size:14px; text-align:center; color:#ffae00;">MELHORES TREINOS</h3>
+        <div id="scores-list"></div>
+    </div>
+</div>
+
+<button id="pause-btn" onclick="alternarPausa()">||</button>
+
+<div id="pause-screen">
+    <h1 style="font-family:'Anton'; font-size:50px; margin-bottom:20px;">PAUSA</h1>
+    <button class="btn-kandal" onclick="alternarPausa()">CONTINUAR</button>
+    <button class="btn-kandal" style="background:transparent; color:#fff; border:2px solid #fff;" onclick="location.reload()">SAIR</button>
 </div>
 
 <div id="ui">
-    <div style="font-size:10px; font-weight:900; color:#555; text-transform:uppercase;">Energia</div>
-    <div style="width:150px; height:10px; background:#ddd; border-radius:10px; overflow:hidden; margin: 5px 0;">
-        <div id="hp-bar"></div>
+    <div style="font-size:10px; font-weight:900; color:#555;">ENERGIA MUSCULAR</div>
+    <div style="width:150px; height:8px; background:#ddd; border-radius:10px; overflow:hidden; margin: 5px 0;">
+        <div id="hp-bar" style="width:100%;"></div>
     </div>
     <div id="score">0</div>
 </div>
@@ -46,9 +102,9 @@
 <div id="evo-msg">EVOLUÇÃO!</div>
 
 <div id="game-over">
-    <h2 style="font-family:'Anton'; font-size:50px; color:#d00; margin:0;">FALHA TOTAL</h2>
+    <h2 style="font-family:'Anton'; font-size:50px; color:#d00; margin:0;">OVERTRAINING</h2>
     <p id="final-score-txt" style="font-size:24px; font-weight:800; margin: 20px 0;">0 PTS</p>
-    <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">REPETIR TREINO</button>
+    <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">TENTAR NOVAMENTE</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -58,44 +114,63 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const startScreen = document.getElementById("start-screen");
 const ui = document.getElementById("ui");
+const pauseBtn = document.getElementById("pause-btn");
+const pauseScreen = document.getElementById("pause-screen");
 const gameOverScreen = document.getElementById("game-over");
 const evoMsg = document.getElementById("evo-msg");
 
-let jogoIniciado = false;
+let jogoIniciado = false, emPausa = false;
 let jogador, score, obstaculos, touchX, transformando, lastMilestone = 0, lastTime = 0, shake = 0;
 
-// --- MOTOR DE ÁUDIO ÚNICO ---
 const somRonnie = new Audio('lightweight.mp3');
-
-function tocarSom() {
-    somRonnie.currentTime = 0; // Reinicia o som se já estiver a tocar
-    somRonnie.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
-}
+function tocarSom() { somRonnie.currentTime = 0; somRonnie.play().catch(e => {}); }
 
 const imagens = {};
 const comida = ['chocolate', 'gelado', 'hamburguer', 'cachorro', 'francesinha', 'proteina', 'legumes', 'energetico'];
 const herois = ['boneco_magro', 'boneco_musculado', 'cbum', 'ronnie', 'arnaldo'];
 
 comida.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; });
-herois.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; imagens[n].onerror = function() { if(!this.src.includes('.jpg')) this.src = n + '.jpg'; }; });
+herois.forEach(n => { imagens[n] = new Image(); imagens[n].src = n + '.png'; });
 
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize); resize();
 
+function atualizarTabela() {
+    let r = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
+    document.getElementById("scores-list").innerHTML = r.map((s, i) => `
+        <div class="score-row"><span>${i+1}º</span> <b>${s} pts</b></div>
+    `).join('');
+}
+
+function salvarRecorde(s) {
+    let r = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
+    r.push(s); r.sort((a,b) => b-a);
+    localStorage.setItem('kandal_top', JSON.stringify(r.slice(0, 3)));
+}
+
 function iniciarJogo() {
-    somRonnie.load(); // Pré-carregamento por segurança
+    somRonnie.load();
     jogador = { w: 75, h: 115, x: canvas.width/2 - 37, y: canvas.height-170, speed: 520, hp: 100, nivel: 'boneco_magro' };
-    score = 0; lastMilestone = 0; obstaculos = []; touchX = null; transformando = false; jogoIniciado = true;
+    score = 0; lastMilestone = 0; obstaculos = []; touchX = null; transformando = false; emPausa = false; jogoIniciado = true;
     lastTime = performance.now();
     document.getElementById("hp-bar").style.width = "100%";
     document.getElementById("score").innerText = "0";
     startScreen.style.display = "none";
     gameOverScreen.style.display = "none";
+    pauseScreen.style.display = "none";
     ui.style.display = "block";
+    pauseBtn.style.display = "block";
 }
 
-window.ontouchstart = (e) => touchX = e.touches[0].clientX;
-window.ontouchmove = (e) => touchX = e.touches[0].clientX;
+function alternarPausa() {
+    if (!jogoIniciado) return;
+    emPausa = !emPausa;
+    pauseScreen.style.display = emPausa ? "flex" : "none";
+    if (!emPausa) lastTime = performance.now();
+}
+
+window.ontouchstart = (e) => { if(!emPausa) touchX = e.touches[0].clientX; };
+window.ontouchmove = (e) => { if(!emPausa) touchX = e.touches[0].clientX; };
 window.ontouchend = () => touchX = null;
 
 class Obj {
@@ -103,36 +178,32 @@ class Obj {
         this.n = comida[Math.floor(Math.random() * comida.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
         this.s = 65; this.x = Math.random() * (canvas.width - this.s); this.y = -this.s;
-        this.v = (320 + (score / 4)); 
+        this.v = (280 + (score / 6)); // Velocidade mais suave
     }
     draw(dt) {
         const img = imagens[this.n];
         if (img && img.complete) ctx.drawImage(img, this.x, this.y, this.s, this.s);
-        if (!transformando) this.y += this.v * dt;
+        if (!transformando && !emPausa) this.y += this.v * dt;
     }
 }
 
 function dispararEvolucao(msg, nivel, vel) {
-    transformando = true; shake = 80;
-    tocarSom(); // Grita na evolução!
+    transformando = true; shake = 80; tocarSom();
     evoMsg.innerText = msg; evoMsg.style.display = "block";
-    canvas.style.filter = "brightness(2) contrast(1.2)";
     setTimeout(() => {
         jogador.nivel = nivel; jogador.speed = vel;
         jogador.w = 110; jogador.h = 175; jogador.y = canvas.height - 230;
         transformando = false; evoMsg.style.display = "none";
-        canvas.style.filter = "none";
     }, 1200);
 }
 
 function loop(currentTime) {
+    if (emPausa) { requestAnimationFrame(loop); return; }
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
     if (jogoIniciado) {
-        if (shake > 0) { ctx.save(); ctx.translate(Math.random()*10-5, Math.random()*10-5); shake--; }
-
         if (touchX !== null) {
             let centro = jogador.x + jogador.w / 2;
             let dist = touchX - centro;
@@ -141,13 +212,8 @@ function loop(currentTime) {
         if (jogador.x < 0) jogador.x = 0;
         if (jogador.x > canvas.width - jogador.w) jogador.x = canvas.width - jogador.w;
 
-        // LÓGICA DO GRITO (A CADA 300 PONTOS)
-        if (score > 0 && score >= lastMilestone + 300) {
-            tocarSom();
-            lastMilestone = score;
-        }
+        if (score > 0 && score >= lastMilestone + 800) { tocarSom(); lastMilestone = score; }
 
-        // EVOLUÇÕES
         if (score >= 1000 && score < 2000 && jogador.nivel === 'boneco_magro') dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 560);
         else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') dispararEvolucao("CBUM ATIVADO!", "cbum", 620);
         else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') dispararEvolucao("LIGHTWEIGHT BABY!", "ronnie", 680);
@@ -155,24 +221,24 @@ function loop(currentTime) {
         const imgP = imagens[jogador.nivel];
         if (imgP && imgP.complete) ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
         
-        if (Math.random() < 0.04 && !transformando) obstaculos.push(new Obj());
+        if (Math.random() < 0.035 && !transformando) obstaculos.push(new Obj());
         
         for (let i = obstaculos.length - 1; i >= 0; i--) {
             const o = obstaculos[i]; o.draw(dt);
             if (jogador.x + 15 < o.x + o.s - 15 && jogador.x + jogador.w - 15 > o.x + 15 && 
-                jogador.y + 15 < o.y + o.s - 15 && jogador.y + jogador.h - 15 > o.y + 15) {
+                jogador.y + 15 < o.y + o.s - 15 && jogador.y + jogador.h - 15 > o.y + 10) {
                 if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
-                else { jogador.hp -= 22; shake = 15; }
+                else { jogador.hp -= 22; }
                 document.getElementById("hp-bar").style.width = Math.max(0, jogador.hp) + "%";
                 document.getElementById("score").innerText = score;
                 obstaculos.splice(i, 1);
             } else if (o.y > canvas.height) { obstaculos.splice(i, 1); }
         }
-        if (jogador.hp <= 0) { jogoIniciado = false; gameOverScreen.style.display = "flex"; }
-        if (shake > 0) ctx.restore();
+        if (jogador.hp <= 0) { jogoIniciado = false; salvarRecorde(score); gameOverScreen.style.display = "flex"; pauseBtn.style.display = "none"; }
     }
     requestAnimationFrame(loop);
 }
+atualizarTabela();
 requestAnimationFrame(loop);
 </script>
 </body>
