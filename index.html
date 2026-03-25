@@ -17,7 +17,6 @@
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; touch-action: none; }
         
-        /* MENU INICIAL DIRETO (SEM SPLASH) */
         #start-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000; display: flex; flex-direction: column; 
@@ -44,7 +43,6 @@
         }
         .score-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
 
-        /* INTERFACE E PAUSA */
         #ui { position: absolute; top: 50px; left: 20px; z-index: 50; display: none; background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 20px; }
         #pause-btn {
             position: absolute; top: 50px; right: 20px; z-index: 100; display: none;
@@ -103,7 +101,7 @@
 
 <div id="game-over">
     <h2 style="font-family:'Anton'; font-size:50px; color:#d00; margin:0;">OVERTRAINING</h2>
-    <p id="final-score-txt" style="font-size:24px; font-weight:800; margin: 20px 0;">0 PTS</p>
+    <p id="final-score-txt" style="font-size:30px; font-weight:800; margin: 20px 0; color:#000;">0 PTS</p>
     <button class="btn-kandal" style="background:#000; color:#fff;" onclick="iniciarJogo()">TENTAR NOVAMENTE</button>
 </div>
 
@@ -146,6 +144,7 @@ function salvarRecorde(s) {
     let r = JSON.parse(localStorage.getItem('kandal_top')) || [0, 0, 0];
     r.push(s); r.sort((a,b) => b-a);
     localStorage.setItem('kandal_top', JSON.stringify(r.slice(0, 3)));
+    atualizarTabela();
 }
 
 function iniciarJogo() {
@@ -178,7 +177,7 @@ class Obj {
         this.n = comida[Math.floor(Math.random() * comida.length)];
         this.bom = ['proteina', 'legumes', 'energetico'].includes(this.n);
         this.s = 65; this.x = Math.random() * (canvas.width - this.s); this.y = -this.s;
-        this.v = (280 + (score / 6)); // Velocidade mais suave
+        this.v = (280 + (score / 6));
     }
     draw(dt) {
         const img = imagens[this.n];
@@ -227,14 +226,25 @@ function loop(currentTime) {
             const o = obstaculos[i]; o.draw(dt);
             if (jogador.x + 15 < o.x + o.s - 15 && jogador.x + jogador.w - 15 > o.x + 15 && 
                 jogador.y + 15 < o.y + o.s - 15 && jogador.y + jogador.h - 15 > o.y + 10) {
-                if (o.bom) { score += 100; jogador.hp = Math.min(100, jogador.hp + 5); }
-                else { jogador.hp -= 22; }
+                if (o.bom) { 
+                    score += 100; 
+                    jogador.hp = Math.min(100, jogador.hp + 5); 
+                } else { 
+                    jogador.hp -= 22; 
+                }
                 document.getElementById("hp-bar").style.width = Math.max(0, jogador.hp) + "%";
                 document.getElementById("score").innerText = score;
                 obstaculos.splice(i, 1);
             } else if (o.y > canvas.height) { obstaculos.splice(i, 1); }
         }
-        if (jogador.hp <= 0) { jogoIniciado = false; salvarRecorde(score); gameOverScreen.style.display = "flex"; pauseBtn.style.display = "none"; }
+        
+        if (jogador.hp <= 0) { 
+            jogoIniciado = false; 
+            document.getElementById("final-score-txt").innerText = score + " PTS";
+            salvarRecorde(score); 
+            gameOverScreen.style.display = "flex"; 
+            pauseBtn.style.display = "none"; 
+        }
     }
     requestAnimationFrame(loop);
 }
