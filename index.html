@@ -39,7 +39,7 @@
 
         #install-btn {
             background: #ffae00; color: #000; font-size: 16px; padding: 10px;
-            display: none; /* Só aparece via JS */
+            display: none;
         }
 
         #high-scores {
@@ -136,7 +136,6 @@ let jogoIniciado = false, emPausa = false;
 let jogador, score, obstaculos, touchX, transformando, lastMilestone = 0, lastTime = 0;
 let deferredPrompt;
 
-// Lógica de Instalação PWA
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -263,9 +262,16 @@ function loop(currentTime) {
 
         if (score > 0 && score >= lastMilestone + 800) { tocarSom(); lastMilestone = score; }
 
-        if (score >= 1000 && score < 2000 && jogador.nivel === 'boneco_magro') dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 560);
-        else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') dispararEvolucao("CBUM ATIVADO!", "cbum", 620);
-        else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') dispararEvolucao("LIGHTWEIGHT BABY!", "ronnie", 680);
+        // LOGICA DE EVOLUÇÃO CORRIGIDA
+        if (score >= 1000 && score < 2000 && jogador.nivel === 'boneco_magro') {
+            dispararEvolucao("MONSTRO KANDAL!", "boneco_musculado", 560);
+        } else if (score >= 2000 && score < 4000 && jogador.nivel === 'boneco_musculado') {
+            dispararEvolucao("CBUM ATIVADO!", "cbum", 620);
+        } else if (score >= 4000 && score < 6000 && jogador.nivel === 'cbum') {
+            dispararEvolucao("LIGHTWEIGHT BABY!", "ronnie", 680);
+        } else if (score >= 6000 && jogador.nivel === 'ronnie') {
+            dispararEvolucao("ARNOLD STYLE!", "arnaldo", 750);
+        }
 
         const imgP = imagens[jogador.nivel];
         if (imgP && imgP.complete) ctx.drawImage(imgP, jogador.x, jogador.y, jogador.w, jogador.h);
